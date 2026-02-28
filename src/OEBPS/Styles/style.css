@@ -21,7 +21,7 @@ h1 + p, h2 + p, h3 + p {
     text-indent: 0;
 }
 
-/* Xử lý Note Popup */
+/* Tối ưu Note Popup */
 a.noteref {
     font-size: 0.75em;
     vertical-align: super;
@@ -29,9 +29,12 @@ a.noteref {
     color: #0056b3;
 }
 
-aside[epub|type="footnote"] {
-    display: none; 
-    border-top: 1px solid #ccc;
-    padding-top: 1em;
-    font-size: 0.9em;
+/* Ẩn hoàn toàn khối chú thích khỏi luồng đọc chính */
+aside[epub|type="footnote"],
+aside.footnote {
+    display: none !important; 
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
 }
