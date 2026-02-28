@@ -5,7 +5,7 @@ const path = require('path');
 // CẤU HÌNH THÔNG TIN SÁCH
 // ==========================================
 const bookConfig = {
-    title: "Dẫn Voi Mai Kia",
+    title: "Tên sách",
     author: "Tên Tác Giả",
     language: "vi",
     identifier: "urn:uuid:12345678-1234-5678-1234-567812345678"
