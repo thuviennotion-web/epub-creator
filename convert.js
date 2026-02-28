@@ -112,7 +112,7 @@ files.forEach(file => {
 // TẠO FILE TỔNG HỢP: notes.xhtml
 // ==========================================
 if (globalNotesHtml !== '') {
-    const notesTitle = "Toàn bộ chú thích";
+    const notesTitle = "Chú thích";
     const notesBody = `    <h1>${notesTitle}</h1>\n    <section epub:type="footnotes" class="footnotes-section">\n${globalNotesHtml}    </section>\n`;
     const finalNotesXhtml = xhtmlTemplate(notesTitle, notesBody);
     
