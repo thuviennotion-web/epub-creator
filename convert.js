@@ -42,6 +42,24 @@ if (files.length === 0) {
 
 let manifestItems = `    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n`;
 manifestItems += `    <item id="css" href="Styles/style.css" media-type="text/css"/>\n`;
+
+// ==========================================
+// TỰ ĐỘNG NHÚNG FONT TỪ THƯ MỤC FONTS
+// ==========================================
+const fontsDir = './src/OEBPS/Fonts';
+if (fs.existsSync(fontsDir)) {
+    const fontFiles = fs.readdirSync(fontsDir).filter(file => file.match(/\.(ttf|otf|woff|woff2)$/i));
+    fontFiles.forEach((file, index) => {
+        let mediaType = 'font/ttf';
+        if (file.endsWith('.otf')) mediaType = 'font/otf';
+        else if (file.endsWith('.woff')) mediaType = 'font/woff';
+        else if (file.endsWith('.woff2')) mediaType = 'font/woff2';
+        
+        manifestItems += `    <item id="font_${index}" href="Fonts/${file}" media-type="${mediaType}"/>\n`;
+    });
+    console.log(`🔤 Đã nhúng tự động ${fontFiles.length} file font vào manifest.`);
+}
+
 let spineItems = ``;
 let navListItems = ``;
 
