@@ -22,7 +22,7 @@ if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 const oldFiles = fs.readdirSync(outputDir).filter(file => file.endsWith('.xhtml'));
 oldFiles.forEach(file => fs.unlinkSync(path.join(outputDir, file)));
 
-const xhtmlTemplate = (title, bodyContent, notesContent) => `<?xml version="1.0" encoding="utf-8"?>
+const xhtmlTemplate = (title, bodyContent) => `<?xml version="1.0" encoding="utf-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="vi" lang="vi">
 <head>
     <title>${title}</title>
@@ -30,7 +30,6 @@ const xhtmlTemplate = (title, bodyContent, notesContent) => `<?xml version="1.0"
 </head>
 <body>
 ${bodyContent}
-${notesContent}
 </body>
 </html>`;
 
@@ -46,7 +45,10 @@ manifestItems += `    <item id="css" href="Styles/style.css" media-type="text/cs
 let spineItems = ``;
 let navListItems = ``;
 
-console.log(`🔄 Đang tiến hành build lại toàn bộ ${files.length} chương...`);
+// Biến lưu trữ TOÀN BỘ chú thích của tất cả các chương
+let globalNotesHtml = '';
+
+console.log(`🔄 Đang tiến hành build lại toàn bộ ${files.length} chương và gom Chú thích...`);
 
 files.forEach(file => {
     const filePath = path.join(inputDir, file);
@@ -60,7 +62,9 @@ files.forEach(file => {
 
     const title = lines[0];
     let bodyHtml = `    <h1>${title}</h1>\n`;
-    let notesHtml = '';
+    
+    // Biến lưu trữ chú thích TẠM THỜI của chương hiện tại
+    let chapterNotesHtml = '';
     
     for (let i = 1; i < lines.length; i++) {
         let line = lines[i];
@@ -69,8 +73,10 @@ files.forEach(file => {
         if (noteMatch) {
             const noteId = noteMatch[1];
             const noteText = noteMatch[2];
-            // Khai báo thẻ footnote CHUẨN KÈM NÚT QUAY LẠI
-            notesHtml += `        <aside epub:type="footnote" id="fn${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="back-link" title="Quay lại">↑</a> <strong>${noteId}.</strong> ${noteText}</p>\n        </aside>\n`;
+            
+            // Tạo ID duy nhất bằng cách ghép fileId (VD: fn_chuong-01_1)
+            // Nút quay lại sẽ trỏ về đúng file của chương đó (VD: chuong-01.xhtml#ref1)
+            chapterNotesHtml += `        <aside epub:type="footnote" id="fn_${fileId}_${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="footnote-return" title="Quay lại vị trí đọc"><strong>${noteId}.</strong></a> ${noteText}</p>\n        </aside>\n`;
             
         } else if (line.startsWith('### ')) {
             const h3Text = line.substring(4).trim();
@@ -79,21 +85,21 @@ files.forEach(file => {
             const h2Text = line.substring(3).trim();
             bodyHtml += `    <h2>${h2Text}</h2>\n`;
         } else {
-            // Thay thế liên kết chú thích: có epub:type để popup, có id=ref để nút quay lại hoạt động
+            // Liên kết nhảy sang file notes.xhtml (VD: href="notes.xhtml#fn_chuong-01_1")
             let processedLine = line.replace(/\[(\d+)\]/g, (match, p1) => {
-                return `<a epub:type="noteref" href="${outputFileName}#fn${p1}" id="ref${p1}" class="noteref">${p1}</a>`;
+                return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">${p1}</a>`;
             });
             bodyHtml += `    <p>${processedLine}</p>\n`;
         }
     }
 
-    // Đóng gói toàn bộ ghi chú vào thẻ section CHUẨN QUỐC TẾ
-    let finalNotesSection = '';
-    if (notesHtml !== '') {
-        finalNotesSection = `\n    <hr class="footnote-divider"/>\n    <section epub:type="footnotes" class="footnotes-section">\n${notesHtml}    </section>\n`;
+    // Nếu chương này có chú thích, gom vào biến tổng globalNotesHtml và tạo tiêu đề phân chia
+    if (chapterNotesHtml !== '') {
+        globalNotesHtml += `\n    <div class="chapter-notes-group">\n        <h3>${title}</h3>\n${chapterNotesHtml}    </div>\n`;
     }
 
-    const finalXhtml = xhtmlTemplate(title, bodyHtml, finalNotesSection);
+    // Ghi file nội dung chương (KHÔNG CÒN PHẦN CHÚ THÍCH Ở DƯỚI NỮA)
+    const finalXhtml = xhtmlTemplate(title, bodyHtml);
     fs.writeFileSync(path.join(outputDir, outputFileName), finalXhtml, 'utf-8');
     console.log(`   ✅ Đã tạo: ${outputFileName}`);
 
@@ -102,7 +108,25 @@ files.forEach(file => {
     navListItems += `            <li><a href="Text/${outputFileName}">${title}</a></li>\n`;
 });
 
-// Cập nhật content.opf và nav.xhtml
+// ==========================================
+// TẠO FILE TỔNG HỢP: notes.xhtml
+// ==========================================
+if (globalNotesHtml !== '') {
+    const notesTitle = "Toàn bộ chú thích";
+    const notesBody = `    <h1>${notesTitle}</h1>\n    <section epub:type="footnotes" class="footnotes-section">\n${globalNotesHtml}    </section>\n`;
+    const finalNotesXhtml = xhtmlTemplate(notesTitle, notesBody);
+    
+    fs.writeFileSync(path.join(outputDir, 'notes.xhtml'), finalNotesXhtml, 'utf-8');
+    console.log(`   📚 Đã tạo file gom chú thích: notes.xhtml`);
+
+    // Bổ sung file notes.xhtml vào manifest và spine (linear="no" để ẩn khỏi luồng đọc lật trang)
+    manifestItems += `    <item id="notes" href="Text/notes.xhtml" media-type="application/xhtml+xml"/>\n`;
+    spineItems += `    <itemref idref="notes" linear="no"/>\n`;
+}
+
+// ==========================================
+// CẬP NHẬT CONTENT.OPF VÀ NAV.XHTML
+// ==========================================
 const modifiedDate = new Date().toISOString().split('.')[0] + 'Z'; 
 const opfContent = `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="3.0">
@@ -130,4 +154,4 @@ const navContent = `<?xml version="1.0" encoding="utf-8"?>
 </html>`;
 fs.writeFileSync(path.join(oebpsDir, 'nav.xhtml'), navContent, 'utf-8');
 
-console.log('🎉 Xong! Đã build cấu trúc Footnotes Hybrid!');
+console.log('🎉 Xong! Đã build cấu trúc 1 file notes.xhtml riêng biệt!');
