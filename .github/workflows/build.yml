@@ -4,6 +4,10 @@ on:
   push:
     branches: [ "main" ]
 
+# THÊM 2 DÒNG NÀY ĐỂ CẤP QUYỀN TẠO RELEASE
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
