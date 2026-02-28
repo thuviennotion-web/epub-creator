@@ -1,82 +1,147 @@
+/* ========================================== */
+/* 1. KHAI BÁO FONT CHỮ YÊU CẦU               */
+/* ========================================== */
 @font-face {
-    font-family: "BeVietnamPro";
-    src: url("../Fonts/BeVietnamPro-Regular.ttf");
+    font-family: "Averta-Light";
+    src: url("../Fonts/Averta-Light.otf"); /* Sửa thành .otf nếu file của bạn là otf */
     font-weight: normal;
     font-style: normal;
 }
+
 @font-face {
-    font-family: "BeVietnamPro";
-    src: url("../Fonts/BeVietnamPro-Italic.ttf");
-    font-weight: normal;
-    font-style: italic;
-}
-@font-face {
-    font-family: "BeVietnamPro";
-    src: url("../Fonts/BeVietnamPro-Bold.ttf");
+    font-family: "Averta-Bold";
+    src: url("../Fonts/Averta-Bold.otf");
     font-weight: bold;
     font-style: normal;
 }
+
 @font-face {
-    font-family: "BeVietnamPro";
-    src: url("../Fonts/BeVietnamPro-BoldItalic.ttf");
-    font-weight: bold;
+    font-family: "Crimson Text";
+    src: url("../Fonts/CrimsonText-Regular.ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Crimson Text";
+    src: url("../Fonts/CrimsonText-Italic.ttf");
+    font-weight: normal;
     font-style: italic;
 }
 
+@font-face {
+    font-family: "Argentum Novus Light";
+    src: url("../Fonts/ArgentumNovus-Light.ttf"); 
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* ========================================== */
+/* 2. ĐỊNH DẠNG CHUNG (BODY - CRIMSON TEXT)   */
+/* ========================================== */
 body {
-    font-family: "Averta", serif; 
-    margin: 0 5pt;
+    font-family: "Crimson Text", serif; 
+    line-height: 1.6;
     text-align: justify;
-    line-height: 1.5;
+    margin: 2% 5%;
+    color: #111;
 }
 
+/* ========================================== */
+/* 3. ĐỊNH DẠNG TIÊU ĐỀ CHƯƠNG                */
+/* ========================================== */
+h2.chapter-label {
+    font-family: "Averta-Light", sans-serif;
+    font-size: 0.9em;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    margin-bottom: 0.5em;
+    margin-top: 10vh; 
+    text-align: left;
+    color: #333;
+}
+
+h1.chapter-title {
+    font-family: "Averta-Bold", sans-serif;
+    font-size: 2.2em;
+    font-weight: bold;
+    line-height: 1.3;
+    margin-top: 0;
+    margin-bottom: 2em; 
+    text-align: left;
+}
+
+/* ========================================== */
+/* 4. ĐỊNH DẠNG ĐOẠN VĂN & DROP CAP           */
+/* ========================================== */
 p {
     text-indent: 1.5em;
     margin-top: 0;
     margin-bottom: 0;
 }
 
-h1, h2, h3 {
-    text-align: center;
-    margin: 1em 0;
-    text-indent: 0;
+/* Tự động bỏ thụt lề cho đoạn văn đầu tiên */
+h1.chapter-title + p {
+    text-indent: 0; 
 }
 
-h1 + p, h2 + p, h3 + p {
-    text-indent: 0;
+/* Chữ to đầu đoạn (Argentum Novus Light) */
+h1.chapter-title + p::first-letter {
+    font-family: "Argentum Novus Light", serif; 
+    font-size: 3.8em; 
+    font-weight: normal;
+    float: left; 
+    line-height: 0.8; 
+    margin-right: 0.08em; 
+    margin-top: -0.05em;
 }
 
-/* Link số chú thích trong văn bản */
+/* ========================================== */
+/* 5. ĐỊNH DẠNG MỤC LỤC & MARKDOWN BỔ SUNG    */
+/* ========================================== */
+#toc h1 {
+    font-family: "Averta-Bold", sans-serif;
+    font-size: 2.5em;
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 1.5em;
+}
+
+#toc ol { list-style-type: none; padding-left: 0; }
+
+#toc li {
+    font-family: "Averta-Light", sans-serif; 
+    font-size: 1.1em;
+    margin-bottom: 1.2em;
+    line-height: 1.5;
+}
+
+#toc li a { text-decoration: none; color: #111; }
+
+/* Thẻ h2, h3 trong bài gõ bằng ## và ### */
+h2, h3 {
+    font-family: "Averta-Bold", sans-serif;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+/* ========================================== */
+/* 6. ĐỊNH DẠNG CHÚ THÍCH                     */
+/* ========================================== */
 a.noteref {
     font-size: 0.75em;
     vertical-align: super;
     text-decoration: none;
-    color: #0056b3;
+    color: #000;
 }
-
-/* Khu vực chứa toàn bộ chú thích ở cuối chương (Dành cho app không có popup) */
 hr.footnote-divider {
-    margin-top: 3em;
-    border: 0;
-    border-top: 1px solid #ccc;
-    width: 30%;
-    margin-left: 0;
-    margin-bottom: 1em;
+    margin-top: 3em; border: 0; border-top: 1px solid #ccc; width: 30%; margin-left: 0; margin-bottom: 1em;
 }
-
 section.footnotes-section {
-    font-size: 0.85em;
-    color: #444; /* Màu xám để phân biệt với văn bản chính */
+    font-size: 0.9em; 
+    color: #444; 
+    font-family: "Averta-Light", sans-serif; 
 }
-
-section.footnotes-section aside {
-    margin-bottom: 0.5em;
-}
-
-/* Nút mũi tên quay lại mạch đọc */
-a.back-link {
-    text-decoration: none;
-    color: #0056b3;
-    font-weight: bold;
-    margin-right: 5px;
-}
+section.footnotes-section aside { margin-bottom: 0.5em; }
+a.footnote-return { text-decoration: none; color: inherit; }

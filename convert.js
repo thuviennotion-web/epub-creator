@@ -5,8 +5,8 @@ const path = require('path');
 // CẤU HÌNH THÔNG TIN SÁCH
 // ==========================================
 const bookConfig = {
-    title: "Tên sách",
-    author: "Tên Tác Giả",
+    title: "Hoàng Đế của Biển Cả",
+    author: "Jack Weatherford",
     language: "vi",
     identifier: "urn:uuid:12345678-1234-5678-1234-567812345678"
 };
