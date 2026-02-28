@@ -18,6 +18,7 @@ const oebpsDir = './src/OEBPS';
 if (!fs.existsSync(inputDir)) fs.mkdirSync(inputDir, { recursive: true });
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
+// Xóa file xhtml cũ trước khi build lại
 const oldFiles = fs.readdirSync(outputDir).filter(file => file.endsWith('.xhtml'));
 oldFiles.forEach(file => fs.unlinkSync(path.join(outputDir, file)));
 
@@ -54,7 +55,6 @@ files.forEach(file => {
     
     if (lines.length === 0) return;
 
-    // LẤY TÊN FILE ĐỂ GẮN VÀO LINK POPUP CHUẨN XÁC
     const outputFileName = file.replace('.txt', '.xhtml');
     const fileId = file.replace('.txt', ''); 
 
@@ -69,8 +69,8 @@ files.forEach(file => {
         if (noteMatch) {
             const noteId = noteMatch[1];
             const noteText = noteMatch[2];
-            // Đã gỡ bỏ hidden="hidden"
-            notesHtml += `    <aside epub:type="footnote" id="fn${noteId}">\n        <p><strong>${noteId}.</strong> ${noteText}</p>\n    </aside>\n`;
+            // Khai báo thẻ footnote CHUẨN KÈM NÚT QUAY LẠI
+            notesHtml += `        <aside epub:type="footnote" id="fn${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="back-link" title="Quay lại">↑</a> <strong>${noteId}.</strong> ${noteText}</p>\n        </aside>\n`;
             
         } else if (line.startsWith('### ')) {
             const h3Text = line.substring(4).trim();
@@ -79,15 +79,21 @@ files.forEach(file => {
             const h2Text = line.substring(3).trim();
             bodyHtml += `    <h2>${h2Text}</h2>\n`;
         } else {
-            // Đã cập nhật href có chứa cụ thể tên file (VD: chuong-01.xhtml#fn1)
+            // Thay thế liên kết chú thích: có epub:type để popup, có id=ref để nút quay lại hoạt động
             let processedLine = line.replace(/\[(\d+)\]/g, (match, p1) => {
-                return `<a epub:type="noteref" href="${outputFileName}#fn${p1}" class="noteref">${p1}</a>`;
+                return `<a epub:type="noteref" href="${outputFileName}#fn${p1}" id="ref${p1}" class="noteref">${p1}</a>`;
             });
             bodyHtml += `    <p>${processedLine}</p>\n`;
         }
     }
 
-    const finalXhtml = xhtmlTemplate(title, bodyHtml, notesHtml);
+    // Đóng gói toàn bộ ghi chú vào thẻ section CHUẨN QUỐC TẾ
+    let finalNotesSection = '';
+    if (notesHtml !== '') {
+        finalNotesSection = `\n    <hr class="footnote-divider"/>\n    <section epub:type="footnotes" class="footnotes-section">\n${notesHtml}    </section>\n`;
+    }
+
+    const finalXhtml = xhtmlTemplate(title, bodyHtml, finalNotesSection);
     fs.writeFileSync(path.join(outputDir, outputFileName), finalXhtml, 'utf-8');
     console.log(`   ✅ Đã tạo: ${outputFileName}`);
 
@@ -96,6 +102,7 @@ files.forEach(file => {
     navListItems += `            <li><a href="Text/${outputFileName}">${title}</a></li>\n`;
 });
 
+// Cập nhật content.opf và nav.xhtml
 const modifiedDate = new Date().toISOString().split('.')[0] + 'Z'; 
 const opfContent = `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="3.0">
@@ -123,4 +130,4 @@ const navContent = `<?xml version="1.0" encoding="utf-8"?>
 </html>`;
 fs.writeFileSync(path.join(oebpsDir, 'nav.xhtml'), navContent, 'utf-8');
 
-console.log('🎉 Xong! Đã dọn dẹp và Build lại hoàn chỉnh!');
+console.log('🎉 Xong! Đã build cấu trúc Footnotes Hybrid!');

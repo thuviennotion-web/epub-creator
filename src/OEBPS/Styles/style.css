@@ -21,7 +21,7 @@ h1 + p, h2 + p, h3 + p {
     text-indent: 0;
 }
 
-/* Tối ưu Note Popup */
+/* Link số chú thích trong văn bản */
 a.noteref {
     font-size: 0.75em;
     vertical-align: super;
@@ -29,11 +29,29 @@ a.noteref {
     color: #0056b3;
 }
 
-/* KHÔNG dùng display: none ở đây nữa */
-/* Apple Books sẽ tự động tàng hình thẻ này. Các máy đọc sách Android/Kindle sẽ hiển thị đẹp đẽ ở cuối chương. */
-aside[epub\:type="footnote"] {
+/* Khu vực chứa toàn bộ chú thích ở cuối chương (Dành cho app không có popup) */
+hr.footnote-divider {
+    margin-top: 3em;
+    border: 0;
     border-top: 1px solid #ccc;
-    margin-top: 2em;
-    padding-top: 1em;
-    font-size: 0.9em;
+    width: 30%;
+    margin-left: 0;
+    margin-bottom: 1em;
+}
+
+section.footnotes-section {
+    font-size: 0.85em;
+    color: #444; /* Màu xám để phân biệt với văn bản chính */
+}
+
+section.footnotes-section aside {
+    margin-bottom: 0.5em;
+}
+
+/* Nút mũi tên quay lại mạch đọc */
+a.back-link {
+    text-decoration: none;
+    color: #0056b3;
+    font-weight: bold;
+    margin-right: 5px;
 }
