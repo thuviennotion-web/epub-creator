@@ -29,12 +29,11 @@ a.noteref {
     color: #0056b3;
 }
 
-/* Ẩn hoàn toàn khối chú thích khỏi luồng đọc chính */
-aside[epub|type="footnote"],
-aside.footnote {
-    display: none !important; 
-    opacity: 0;
-    height: 0;
-    margin: 0;
-    padding: 0;
+/* KHÔNG dùng display: none ở đây nữa */
+/* Apple Books sẽ tự động tàng hình thẻ này. Các máy đọc sách Android/Kindle sẽ hiển thị đẹp đẽ ở cuối chương. */
+aside[epub\:type="footnote"] {
+    border-top: 1px solid #ccc;
+    margin-top: 2em;
+    padding-top: 1em;
+    font-size: 0.9em;
 }

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // ==========================================
-// 1. CẤU HÌNH THÔNG TIN SÁCH (Sửa tại đây)
+// CẤU HÌNH THÔNG TIN SÁCH
 // ==========================================
 const bookConfig = {
     title: "Dẫn Voi Mai Kia",
@@ -18,7 +18,9 @@ const oebpsDir = './src/OEBPS';
 if (!fs.existsSync(inputDir)) fs.mkdirSync(inputDir, { recursive: true });
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-// Khuôn mẫu XHTML cho từng chương
+const oldFiles = fs.readdirSync(outputDir).filter(file => file.endsWith('.xhtml'));
+oldFiles.forEach(file => fs.unlinkSync(path.join(outputDir, file)));
+
 const xhtmlTemplate = (title, bodyContent, notesContent) => `<?xml version="1.0" encoding="utf-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="vi" lang="vi">
 <head>
@@ -31,16 +33,19 @@ ${notesContent}
 </body>
 </html>`;
 
-// Đọc và SẮP XẾP các file txt theo thứ tự tên (chuong-01, chuong-02...)
-const files = fs.readdirSync(inputDir)
-                .filter(file => file.endsWith('.txt'))
-                .sort(); // Đảm bảo chương 1 luôn đứng trước chương 2
+const files = fs.readdirSync(inputDir).filter(file => file.endsWith('.txt')).sort();
 
-// Khởi tạo các biến để gom dữ liệu cho OPF và NAV
+if (files.length === 0) {
+    console.log('⚠️ Không tìm thấy file .txt nào.');
+    process.exit(1);
+}
+
 let manifestItems = `    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n`;
 manifestItems += `    <item id="css" href="Styles/style.css" media-type="text/css"/>\n`;
 let spineItems = ``;
 let navListItems = ``;
+
+console.log(`🔄 Đang tiến hành build lại toàn bộ ${files.length} chương...`);
 
 files.forEach(file => {
     const filePath = path.join(inputDir, file);
@@ -49,7 +54,10 @@ files.forEach(file => {
     
     if (lines.length === 0) return;
 
-    // Lấy dòng đầu tiên làm tiêu đề h1
+    // LẤY TÊN FILE ĐỂ GẮN VÀO LINK POPUP CHUẨN XÁC
+    const outputFileName = file.replace('.txt', '.xhtml');
+    const fileId = file.replace('.txt', ''); 
+
     const title = lines[0];
     let bodyHtml = `    <h1>${title}</h1>\n`;
     let notesHtml = '';
@@ -59,50 +67,36 @@ files.forEach(file => {
         const noteMatch = line.match(/^\[(\d+)\]:\s*(.+)$/);
         
         if (noteMatch) {
-            // 1. Xử lý dòng chú thích ở cuối file
             const noteId = noteMatch[1];
             const noteText = noteMatch[2];
-            notesHtml += `    <aside epub:type="footnote" id="fn${noteId}" hidden="hidden">\n        <p>${noteId}. ${noteText}</p>\n    </aside>\n`;
+            // Đã gỡ bỏ hidden="hidden"
+            notesHtml += `    <aside epub:type="footnote" id="fn${noteId}">\n        <p><strong>${noteId}.</strong> ${noteText}</p>\n    </aside>\n`;
             
         } else if (line.startsWith('### ')) {
-            // 2. Nhận diện thẻ h3 (3 dấu thăng)
             const h3Text = line.substring(4).trim();
             bodyHtml += `    <h3>${h3Text}</h3>\n`;
-            
         } else if (line.startsWith('## ')) {
-            // 3. Nhận diện thẻ h2 (2 dấu thăng)
             const h2Text = line.substring(3).trim();
             bodyHtml += `    <h2>${h2Text}</h2>\n`;
-            
         } else {
-            // 4. Xử lý đoạn văn bình thường (<p>)
+            // Đã cập nhật href có chứa cụ thể tên file (VD: chuong-01.xhtml#fn1)
             let processedLine = line.replace(/\[(\d+)\]/g, (match, p1) => {
-                return `<a epub:type="noteref" href="#fn${p1}" class="noteref">${p1}</a>`;
+                return `<a epub:type="noteref" href="${outputFileName}#fn${p1}" class="noteref">${p1}</a>`;
             });
             bodyHtml += `    <p>${processedLine}</p>\n`;
         }
     }
 
     const finalXhtml = xhtmlTemplate(title, bodyHtml, notesHtml);
-    const outputFileName = file.replace('.txt', '.xhtml');
-    const fileId = file.replace('.txt', ''); // ví dụ: chuong-01
-    
-    // Ghi file .xhtml
     fs.writeFileSync(path.join(outputDir, outputFileName), finalXhtml, 'utf-8');
-    console.log(`✅ Đã xử lý: ${outputFileName}`);
+    console.log(`   ✅ Đã tạo: ${outputFileName}`);
 
-    // ==========================================
-    // GOM DỮ LIỆU ĐỂ TẠO MANIFEST, SPINE VÀ NAV
-    // ==========================================
     manifestItems += `    <item id="${fileId}" href="Text/${outputFileName}" media-type="application/xhtml+xml"/>\n`;
     spineItems += `    <itemref idref="${fileId}"/>\n`;
     navListItems += `            <li><a href="Text/${outputFileName}">${title}</a></li>\n`;
 });
 
-// ==========================================
-// 2. TỰ ĐỘNG TẠO FILE content.opf
-// ==========================================
-const modifiedDate = new Date().toISOString().split('.')[0] + 'Z'; // Lấy giờ hiện tại chuẩn ISO
+const modifiedDate = new Date().toISOString().split('.')[0] + 'Z'; 
 const opfContent = `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="3.0">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -112,38 +106,21 @@ const opfContent = `<?xml version="1.0" encoding="utf-8"?>
     <dc:identifier id="bookid">${bookConfig.identifier}</dc:identifier>
     <meta property="dcterms:modified">${modifiedDate}</meta>
   </metadata>
-  
-  <manifest>
-${manifestItems.trimEnd()}
-  </manifest>
-
-  <spine>
-${spineItems.trimEnd()}
-  </spine>
+  <manifest>\n${manifestItems.trimEnd()}\n  </manifest>
+  <spine>\n${spineItems.trimEnd()}\n  </spine>
 </package>`;
-
 fs.writeFileSync(path.join(oebpsDir, 'content.opf'), opfContent, 'utf-8');
-console.log(`📝 Đã cập nhật tự động: content.opf`);
 
-// ==========================================
-// 3. TỰ ĐỘNG TẠO FILE nav.xhtml (Mục lục)
-// ==========================================
 const navContent = `<?xml version="1.0" encoding="utf-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="${bookConfig.language}" lang="${bookConfig.language}">
-<head>
-    <title>Mục lục</title>
-</head>
+<head><title>Mục lục</title></head>
 <body>
     <nav epub:type="toc" id="toc">
         <h1>Mục lục</h1>
-        <ol>
-${navListItems.trimEnd()}
-        </ol>
+        <ol>\n${navListItems.trimEnd()}\n        </ol>
     </nav>
 </body>
 </html>`;
-
 fs.writeFileSync(path.join(oebpsDir, 'nav.xhtml'), navContent, 'utf-8');
-console.log(`📑 Đã cập nhật tự động: nav.xhtml`);
 
-console.log('🎉 Xong! Dự án đã sẵn sàng để đẩy lên GitHub!');
+console.log('🎉 Xong! Đã dọn dẹp và Build lại hoàn chỉnh!');
