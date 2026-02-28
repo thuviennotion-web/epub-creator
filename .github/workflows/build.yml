@@ -1,0 +1,67 @@
+name: Build EPUB
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Trích xuất tiêu đề sách và tạo Slug (Tên file)
+        run: |
+          # Chạy Python để đọc XML và xử lý chuỗi tiếng Việt thành slug
+          SLUG=$(python3 -c "
+          import xml.etree.ElementTree as ET
+          import re
+          
+          try:
+              # Đọc file content.opf
+              tree = ET.parse('src/OEBPS/content.opf')
+              
+              # Tìm thẻ tiêu đề (bỏ qua rào cản namespace của XML để dễ lấy dữ liệu)
+              title = next(elem.text for elem in tree.iter() if 'title' in elem.tag)
+              
+              # Chuyển đổi tiếng Việt có dấu thành không dấu
+              s = title.lower()
+              s = re.sub(r'[àáạảãâầấậẩẫăằắặẳẵ]', 'a', s)
+              s = re.sub(r'[èéẹẻẽêềếệểễ]', 'e', s)
+              s = re.sub(r'[ìíịỉĩ]', 'i', s)
+              s = re.sub(r'[òóọỏõôồốộổỗơờớợởỡ]', 'o', s)
+              s = re.sub(r'[ùúụủũưừứựửữ]', 'u', s)
+              s = re.sub(r'[ỳýỵỷỹ]', 'y', s)
+              s = re.sub(r'[đ]', 'd', s)
+              
+              # Xóa ký tự đặc biệt, chỉ giữ lại chữ, số và thay khoảng trắng bằng dấu gạch ngang
+              s = re.sub(r'[^a-z0-9\s-]', '', s)
+              s = re.sub(r'[\s-]+', '-', s).strip('-')
+              
+              print(s)
+          except Exception as e:
+              # Tên file mặc định phòng trường hợp file opf bị lỗi
+              print('ebook-mac-dinh') 
+          ")
+          
+          # Lưu tên file vào biến môi trường của GitHub Actions
+          echo "EPUB_FILENAME=${SLUG}.epub" >> $GITHUB_ENV
+          echo "Tên file tự động tạo là: ${SLUG}.epub"
+
+      - name: Xây dựng file EPUB
+        run: |
+          cd src
+          # Bước 1: Nén mimetype đầu tiên, gọi tên file từ biến môi trường
+          zip -X0q ../${{ env.EPUB_FILENAME }} mimetype
+          # Bước 2: Nén toàn bộ ruột sách vào file epub
+          zip -X9rq ../${{ env.EPUB_FILENAME }} META-INF OEBPS
+          cd ..
+
+      - name: Tạo bản Release tự động
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.EPUB_FILENAME }}
+          tag_name: "v1.${{ github.run_number }}"
+          name: "Bản cập nhật số ${{ github.run_number }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,37 @@
+body {
+    font-family: "Averta", serif; 
+    margin: 0 5pt;
+    text-align: justify;
+    line-height: 1.5;
+}
+
+p {
+    text-indent: 1.5em;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    margin: 1em 0;
+    text-indent: 0;
+}
+
+h1 + p, h2 + p, h3 + p {
+    text-indent: 0;
+}
+
+/* Xử lý Note Popup */
+a.noteref {
+    font-size: 0.75em;
+    vertical-align: super;
+    text-decoration: none;
+    color: #0056b3;
+}
+
+aside[epub|type="footnote"] {
+    display: none; 
+    border-top: 1px solid #ccc;
+    padding-top: 1em;
+    font-size: 0.9em;
+}
