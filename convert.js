@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { marked } = require('marked'); // Import thư viện Markdown
+const { marked } = require('marked'); 
 
 // ==========================================
 // CẤU HÌNH THÔNG TIN SÁCH
@@ -12,7 +12,7 @@ const bookConfig = {
     identifier: "urn:uuid:12345678-1234-5678-1234-567812345678"
 };
 
-const inputDir = './raw_md';  // Đã đổi sang thư mục chứa file .md
+const inputDir = './raw_md';  
 const outputDir = './src/OEBPS/Text'; 
 const oebpsDir = './src/OEBPS';
 
@@ -70,7 +70,6 @@ files.forEach(file => {
     const outputFileName = file.replace('.md', '.xhtml');
     const fileId = file.replace('.md', ''); 
 
-    // Lấy dòng đầu tiên làm tiêu đề, tự động gọt bỏ dấu '#' nếu có
     const titleLine = lines[0];
     const cleanTitle = titleLine.replace(/^#+\s*/, ''); 
     
@@ -94,22 +93,26 @@ files.forEach(file => {
         
         if (noteMatch) {
             const noteId = noteMatch[1];
-            // Render nội dung chú thích bằng marked (hỗ trợ in đậm/nghiêng trong chú thích)
             const noteText = marked.parseInline(noteMatch[2]);
             
-            chapterNotesHtml += `        <aside epub:type="footnote" id="fn_${fileId}_${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="footnote-return" title="Quay lại vị trí đọc"><strong>${noteId}.</strong></a> ${noteText}</p>\n        </aside>\n`;
+            // Đã đổi thành [1] ở khu vực danh sách chú thích
+            chapterNotesHtml += `        <aside epub:type="footnote" id="fn_${fileId}_${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="footnote-return" title="Quay lại vị trí đọc"><strong>[${noteId}]</strong></a> ${noteText}</p>\n        </aside>\n`;
         } else {
-            // Thêm dấu ngoặc vuông bao quanh ${p1}
-            let processedLine = line.replace(/\[(\d+)\]/g, (match, p1) => {
-                return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">[${p1}]</a>`;
-            });
-            markdownBodyLines.push(processedLine);
+            // Giữ nguyên dòng để Markdown xử lý trước
+            markdownBodyLines.push(line);
         }
     }
 
     // BIÊN DỊCH TOÀN BỘ PHẦN THÂN TỪ MARKDOWN SANG HTML
-    const rawMarkdown = markdownBodyLines.join('\n\n'); // Thêm dòng trống để marked hiểu là các đoạn <p>
-    const compiledHtml = marked.parse(rawMarkdown);
+    const rawMarkdown = markdownBodyLines.join('\n\n'); 
+    let compiledHtml = marked.parse(rawMarkdown);
+
+    // THAY THẾ CHÚ THÍCH SAU KHI DỊCH XONG
+    // Bước này đảm bảo ngoặc vuông [] được giữ nguyên vẹn 100%
+    compiledHtml = compiledHtml.replace(/\[(\d+)\]/g, (match, p1) => {
+        return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">[${p1}]</a>`;
+    });
+    
     bodyHtml += compiledHtml;
 
     if (chapterNotesHtml !== '') {
