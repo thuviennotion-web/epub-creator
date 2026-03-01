@@ -99,9 +99,9 @@ files.forEach(file => {
             
             chapterNotesHtml += `        <aside epub:type="footnote" id="fn_${fileId}_${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="footnote-return" title="Quay lại vị trí đọc"><strong>${noteId}.</strong></a> ${noteText}</p>\n        </aside>\n`;
         } else {
-            // Thay thế liên kết [1] thành thẻ HTML, giữ nguyên các cú pháp Markdown khác
+            // Thêm dấu ngoặc vuông bao quanh ${p1}
             let processedLine = line.replace(/\[(\d+)\]/g, (match, p1) => {
-                return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">${p1}</a>`;
+                return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">[${p1}]</a>`;
             });
             markdownBodyLines.push(processedLine);
         }
