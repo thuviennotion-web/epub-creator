@@ -6,8 +6,8 @@ const { marked } = require('marked'); // Import thư viện Markdown
 // CẤU HÌNH THÔNG TIN SÁCH
 // ==========================================
 const bookConfig = {
-    title: "Hoàng Đế của Biển Cả",
-    author: "Jack Weatherford",
+    title: "Dẫn Voi Mai Kia",
+    author: "Tên Tác Giả",
     language: "vi",
     identifier: "urn:uuid:12345678-1234-5678-1234-567812345678"
 };
