@@ -129,18 +129,11 @@ h2, h3 {
 /* ========================================== */
 /* 6. ĐỊNH DẠNG CHÚ THÍCH                     */
 /* ========================================== */
-/* Bao bọc toàn bộ cụm [1] gồm cả ngoặc và số */
-sup.note-wrapper {
+a.noteref {
     font-size: 0.75em;
-    vertical-align: super; /* Đẩy chữ lên dạng số mũ */
-    font-weight: bold;
-    color: #0056b3; /* Đổi màu ngói đỏ nổi bật tại đây */
-}
-
-/* Con số bên trong ngoặc (Phần Apple Books can thiệp) */
-sup.note-wrapper a.noteref {
+    vertical-align: super;
     text-decoration: underline;
-    color: inherit; /* Ép nó kế thừa màu đỏ từ thẻ sup bên ngoài */
+    color: #0056b3;
 }
 hr.footnote-divider {
     margin-top: 3em; border: 0; border-top: 1px solid #ccc; width: 30%; margin-left: 0; margin-bottom: 1em;
