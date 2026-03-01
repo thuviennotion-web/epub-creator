@@ -108,9 +108,9 @@ files.forEach(file => {
     let compiledHtml = marked.parse(rawMarkdown);
 
     // THAY THẾ CHÚ THÍCH SAU KHI DỊCH XONG
-    // Bước này đảm bảo ngoặc vuông [] được giữ nguyên vẹn 100%
+    // Đưa dấu [] ra bên ngoài thẻ <a> và bọc bằng <sup> để bảo vệ khỏi Apple Books
     compiledHtml = compiledHtml.replace(/\[(\d+)\]/g, (match, p1) => {
-        return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">[${p1}]</a>`;
+        return `<sup class="note-wrapper">[<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">${p1}</a>]</sup>`;
     });
     
     bodyHtml += compiledHtml;
