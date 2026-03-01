@@ -54,7 +54,7 @@ body {
 h2.chapter-label {
     font-family: "Averta-Light", sans-serif;
     font-size: 0.8em;
-    font-weight: normal;
+    font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.3em; /* Kéo giãn chữ giống "L Ờ I N Ó I Đ Ầ U" */
     margin-top: 15vh; /* Đẩy xuống một quãng so với đầu trang */
@@ -94,8 +94,8 @@ h1.chapter-title + p::first-letter {
     font-size: 3.5em; /* Độ lớn tương đương 2.5 dòng chữ */
     font-weight: normal;
     float: left; 
-    line-height: 0.9; /* Căn chỉnh để chữ C bằng đầu với dòng chữ tiên */
-    padding-right: 0.08em; 
+    line-height: 0.7; /* Căn chỉnh để chữ C bằng đầu với dòng chữ tiên */
+    padding-right: 0.00em; 
     margin-top: 0.05em; /* Đẩy nhẹ xuống cho viền trên khớp với chữ thường */
     color: #111;
 }
@@ -168,6 +168,6 @@ section.footnotes-section aside {
 }
 
 a.footnote-return { 
-    text-decoration: none; 
+    text-decoration: inherit; 
     color: inherit; 
 }
