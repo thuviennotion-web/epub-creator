@@ -1,9 +1,9 @@
 /* ========================================== */
-/* 1. KHAI BÁO FONT CHỮ YÊU CẦU               */
+/* 1. KHAI BÁO FONT CHỮ                       */
 /* ========================================== */
 @font-face {
     font-family: "Averta-Light";
-    src: url("../Fonts/Averta-Light.otf"); /* Sửa thành .otf nếu file của bạn là otf */
+    src: url("../Fonts/Averta-Light.otf"); 
     font-weight: normal;
     font-style: normal;
 }
@@ -37,27 +37,28 @@
 }
 
 /* ========================================== */
-/* 2. ĐỊNH DẠNG CHUNG (BODY - CRIMSON TEXT)   */
+/* 2. ĐỊNH DẠNG CHUNG (BODY)                  */
 /* ========================================== */
 body {
     font-family: "Crimson Text", serif; 
+    font-size: 1.1em; /* Tăng nhẹ size chữ để đọc thoải mái như ảnh 2 */
     line-height: 1.6;
     text-align: justify;
-    margin: 2% 5%;
+    margin: 5% 5%; /* Căn lề hai bên rộng rãi, thoáng mắt */
     color: #111;
 }
 
 /* ========================================== */
-/* 3. ĐỊNH DẠNG TIÊU ĐỀ CHƯƠNG                */
+/* 3. ĐỊNH DẠNG TIÊU ĐỀ (LABEL & TITLE)       */
 /* ========================================== */
 h2.chapter-label {
     font-family: "Averta-Light", sans-serif;
-    font-size: 0.9em;
-    font-weight: bold;
+    font-size: 0.8em;
+    font-weight: normal;
     text-transform: uppercase;
-    letter-spacing: 0.3em;
-    margin-bottom: 0.5em;
-    margin-top: 10vh; 
+    letter-spacing: 0.3em; /* Kéo giãn chữ giống "L Ờ I N Ó I Đ Ầ U" */
+    margin-top: 15vh; /* Đẩy xuống một quãng so với đầu trang */
+    margin-bottom: 0.8em;
     text-align: left;
     color: #333;
 }
@@ -68,58 +69,67 @@ h1.chapter-title {
     font-weight: bold;
     line-height: 1.3;
     margin-top: 0;
-    margin-bottom: 2em; 
+    margin-bottom: 1.5em; /* Khoảng cách từ tiêu đề xuống đoạn văn đầu */
     text-align: left;
+    color: #000;
 }
 
 /* ========================================== */
 /* 4. ĐỊNH DẠNG ĐOẠN VĂN & DROP CAP           */
 /* ========================================== */
 p {
-    text-indent: 1.5em;
+    text-indent: 1.5em; /* Thụt lề đầu dòng */
     margin-top: 0;
-    margin-bottom: 0;
+    margin-bottom: 0.5em; /* Tạo độ thoáng nhẹ giữa các đoạn văn */
 }
 
-/* Tự động bỏ thụt lề cho đoạn văn đầu tiên */
+/* Tự động bỏ thụt lề cho đoạn văn đầu tiên sau Tiêu đề */
 h1.chapter-title + p {
     text-indent: 0; 
 }
 
-/* Chữ to đầu đoạn (Argentum Novus Light) */
+/* Thiết kế Drop Cap (Chữ to đầu đoạn) chuẩn xác như ảnh 3 */
 h1.chapter-title + p::first-letter {
     font-family: "Argentum Novus Light", serif; 
-    font-size: 3.8em; 
+    font-size: 3.5em; /* Độ lớn tương đương 2.5 dòng chữ */
     font-weight: normal;
     float: left; 
-    line-height: 0.8; 
-    margin-right: 0.08em; 
-    margin-top: -0.05em;
+    line-height: 0.9; /* Căn chỉnh để chữ C bằng đầu với dòng chữ tiên */
+    padding-right: 0.08em; 
+    margin-top: 0.05em; /* Đẩy nhẹ xuống cho viền trên khớp với chữ thường */
+    color: #111;
 }
 
 /* ========================================== */
-/* 5. ĐỊNH DẠNG MỤC LỤC & MARKDOWN BỔ SUNG    */
+/* 5. ĐỊNH DẠNG MỤC LỤC (ẢNH 1)               */
 /* ========================================== */
 #toc h1 {
     font-family: "Averta-Bold", sans-serif;
-    font-size: 2.5em;
+    font-size: 2.2em;
     font-weight: bold;
     text-align: left;
     margin-bottom: 1.5em;
+    color: #000;
 }
 
-#toc ol { list-style-type: none; padding-left: 0; }
+#toc ol { 
+    list-style-type: none; 
+    padding-left: 0; 
+}
 
 #toc li {
     font-family: "Averta-Light", sans-serif; 
     font-size: 1.1em;
-    margin-bottom: 1.2em;
+    margin-bottom: 1em;
     line-height: 1.5;
 }
 
-#toc li a { text-decoration: none; color: #111; }
+#toc li a { 
+    text-decoration: none; 
+    color: #111; 
+}
 
-/* Thẻ h2, h3 trong bài gõ bằng ## và ### */
+/* Nếu bạn có dùng thẻ h2, h3 trong văn bản markdown */
 h2, h3 {
     font-family: "Averta-Bold", sans-serif;
     margin-top: 1.5em;
@@ -127,21 +137,37 @@ h2, h3 {
 }
 
 /* ========================================== */
-/* 6. ĐỊNH DẠNG CHÚ THÍCH                     */
+/* 6. ĐỊNH DẠNG CHÚ THÍCH (ẢNH 2)             */
 /* ========================================== */
+/* Phục hồi định dạng số 1 nhỏ màu xanh gạch chân */
 a.noteref {
+    font-family: "Crimson Text", serif;
     font-size: 0.75em;
     vertical-align: super;
-    text-decoration: underline;
-    color: #0056b3;
+    text-decoration: underline; /* Gạch chân như ảnh 2 */
+    color: #0056b3; /* Màu xanh dương tiêu chuẩn */
 }
+
 hr.footnote-divider {
-    margin-top: 3em; border: 0; border-top: 1px solid #ccc; width: 30%; margin-left: 0; margin-bottom: 1em;
+    margin-top: 3em; 
+    border: 0; 
+    border-top: 1px solid #ccc; 
+    width: 30%; 
+    margin-left: 0; 
+    margin-bottom: 1em;
 }
+
 section.footnotes-section {
     font-size: 0.9em; 
     color: #444; 
     font-family: "Averta-Light", sans-serif; 
 }
-section.footnotes-section aside { margin-bottom: 0.5em; }
-a.footnote-return { text-decoration: none; color: inherit; }
+
+section.footnotes-section aside { 
+    margin-bottom: 0.5em; 
+}
+
+a.footnote-return { 
+    text-decoration: none; 
+    color: inherit; 
+}

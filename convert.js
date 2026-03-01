@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { marked } = require('marked'); // Import thư viện Markdown
+const { marked } = require('marked'); 
 
 // ==========================================
 // CẤU HÌNH THÔNG TIN SÁCH
@@ -12,7 +12,7 @@ const bookConfig = {
     identifier: "urn:uuid:12345678-1234-5678-1234-567812345678"
 };
 
-const inputDir = './raw_md';  // Đã đổi sang thư mục chứa file .md
+const inputDir = './raw_md';  
 const outputDir = './src/OEBPS/Text'; 
 const oebpsDir = './src/OEBPS';
 
@@ -69,71 +69,90 @@ files.forEach(file => {
 
     const outputFileName = file.replace('.md', '.xhtml');
     const fileId = file.replace('.md', ''); 
+    
+    // Tự động nhận diện file nào là "Phần" dựa vào tên file (VD: 01-phan-1.md)
+    const isPart = fileId.toLowerCase().includes('phan') || fileId.toLowerCase().includes('quyen');
 
-    // Lấy dòng đầu tiên làm tiêu đề, tự động gọt bỏ dấu '#' nếu có
-    const titleLine = lines[0];
-    const cleanTitle = titleLine.replace(/^#+\s*/, ''); 
-    
-    const titleLower = cleanTitle.toLowerCase();
-    const isPart = titleLower.startsWith('phần') || titleLower.startsWith('quyển') || titleLower.startsWith('tập');
-    
-    let bodyHtml = '';
-    if (isPart) {
-        bodyHtml += `    <h1 class="part-title">${cleanTitle}</h1>\n`;
+    // ----------------------------------------------------
+    // TRÍCH XUẤT TIÊU ĐỀ LÀM MỤC LỤC (KHỚP VỚI ẢNH 1)
+    // ----------------------------------------------------
+    let chapterLabel = '';
+    let chapterTitle = '';
+    let tocTitle = '';
+
+    lines.forEach(line => {
+        if (line.startsWith('## ') && !chapterLabel) chapterLabel = line.replace(/^##\s*/, '').trim();
+        else if (line.startsWith('# ') && !chapterTitle) chapterTitle = line.replace(/^#\s*/, '').trim();
+    });
+
+    // Gom thành dạng "Lời nói đầu: Thời đại hoàng kim..."
+    if (chapterLabel && chapterTitle) {
+        tocTitle = `${chapterLabel}: ${chapterTitle}`; 
     } else {
-        bodyHtml += `    <h1>${cleanTitle}</h1>\n`;
+        tocTitle = chapterTitle || chapterLabel || fileId;
     }
-    
+
+    // ----------------------------------------------------
+    // XỬ LÝ NỘI DUNG CHÍNH
+    // ----------------------------------------------------
     let chapterNotesHtml = '';
     let markdownBodyLines = [];
     
-    // Tách riêng phần thân (body) và phần chú thích (footnotes)
-    for (let i = 1; i < lines.length; i++) {
+    for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
         const noteMatch = line.match(/^\[(\d+)\]:\s*(.+)$/);
         
         if (noteMatch) {
             const noteId = noteMatch[1];
-            // Render nội dung chú thích bằng marked (hỗ trợ in đậm/nghiêng trong chú thích)
             const noteText = marked.parseInline(noteMatch[2]);
-            
-            chapterNotesHtml += `        <aside epub:type="footnote" id="fn_${fileId}_${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="footnote-return" title="Quay lại vị trí đọc"><strong>${noteId}.</strong></a> ${noteText}</p>\n        </aside>\n`;
+            // Tạo note ở danh sách cuối với số 1. chuẩn như cũ
+            chapterNotesHtml += `        <aside epub:type="footnote" id="fn_${fileId}_${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="footnote-return" title="Quay lại vị trí đọc">${noteId}.</a> ${noteText}</p>\n        </aside>\n`;
         } else {
-            // Thay thế liên kết [1] thành thẻ HTML
-            let processedLine = line.replace(/\[(\d+)\]/g, (match, p1) => {
-                return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">${p1}</a>`;
-            });
-            markdownBodyLines.push(processedLine);
+            markdownBodyLines.push(line);
         }
     }
 
-    // BIÊN DỊCH TOÀN BỘ PHẦN THÂN TỪ MARKDOWN SANG HTML
-    const rawMarkdown = markdownBodyLines.join('\n\n'); // Thêm dòng trống để marked hiểu là các đoạn <p>
-    const compiledHtml = marked.parse(rawMarkdown);
-    bodyHtml += compiledHtml;
+    // Biên dịch bằng thư viện marked
+    const rawMarkdown = markdownBodyLines.join('\n\n'); 
+    let compiledHtml = marked.parse(rawMarkdown);
 
-    if (chapterNotesHtml !== '') {
-        globalNotesHtml += `\n    <div class="chapter-notes-group">\n        <h3>${cleanTitle}</h3>\n${chapterNotesHtml}    </div>\n`;
+    // DÁN CLASS CSS CHO TIÊU ĐỀ ĐỂ TẠO DROP CAP
+    if (isPart) {
+        compiledHtml = compiledHtml.replace(/<h1([^>]*)>/i, '<h1 class="part-title"$1>');
+    } else {
+        // Chỉ dán class vào thẻ h1, h2 xuất hiện đầu tiên của chương
+        compiledHtml = compiledHtml.replace(/<h1([^>]*)>/i, '<h1 class="chapter-title"$1>');
+        compiledHtml = compiledHtml.replace(/<h2([^>]*)>/i, '<h2 class="chapter-label"$1>');
     }
 
-    const finalXhtml = xhtmlTemplate(cleanTitle, bodyHtml);
+    // Phục hồi chú thích trong văn bản thành số 1 gạch chân màu xanh (Khớp với Ảnh 2)
+    compiledHtml = compiledHtml.replace(/\[(\d+)\]/g, (match, p1) => {
+        return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">${p1}</a>`;
+    });
+
+    if (chapterNotesHtml !== '') {
+        globalNotesHtml += `\n    <div class="chapter-notes-group">\n        <h3>${tocTitle}</h3>\n${chapterNotesHtml}    </div>\n`;
+    }
+
+    const finalXhtml = xhtmlTemplate(chapterTitle || tocTitle, compiledHtml);
     fs.writeFileSync(path.join(outputDir, outputFileName), finalXhtml, 'utf-8');
     console.log(`   ✅ Đã dịch: ${outputFileName} ${isPart ? '(Bìa Phần)' : ''}`);
 
     manifestItems += `    <item id="${fileId}" href="Text/${outputFileName}" media-type="application/xhtml+xml"/>\n`;
     spineItems += `    <itemref idref="${fileId}"/>\n`;
 
+    // ----------------------------------------------------
+    // MỤC LỤC ĐA CẤP (NESTED TOC)
+    // ----------------------------------------------------
     if (isPart) {
-        if (insidePart) {
-            navListItems += `                </ol>\n            </li>\n`; 
-        }
-        navListItems += `            <li>\n                <a href="Text/${outputFileName}">${cleanTitle}</a>\n                <ol>\n`; 
+        if (insidePart) navListItems += `                </ol>\n            </li>\n`; 
+        navListItems += `            <li>\n                <a href="Text/${outputFileName}">${tocTitle}</a>\n                <ol>\n`; 
         insidePart = true;
     } else {
         if (insidePart) {
-            navListItems += `                    <li><a href="Text/${outputFileName}">${cleanTitle}</a></li>\n`; 
+            navListItems += `                    <li><a href="Text/${outputFileName}">${tocTitle}</a></li>\n`; 
         } else {
-            navListItems += `            <li><a href="Text/${outputFileName}">${cleanTitle}</a></li>\n`; 
+            navListItems += `            <li><a href="Text/${outputFileName}">${tocTitle}</a></li>\n`; 
         }
     }
 });
@@ -178,4 +197,4 @@ const navContent = `<?xml version="1.0" encoding="utf-8"?>
 </html>`;
 fs.writeFileSync(path.join(oebpsDir, 'nav.xhtml'), navContent, 'utf-8');
 
-console.log('🎉 Xong! Hệ thống đã nâng cấp thành công lên Markdown!');
+console.log('🎉 Xong! Hệ thống đã nâng cấp toàn diện thiết kế CSS và cấu trúc Markdown!');

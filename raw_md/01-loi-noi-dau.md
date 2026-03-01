@@ -1,5 +1,6 @@
-LỜI NÓI ĐẦU
-Thời đại hoàng kim trên biển của Trung Hoa
+## LỜI NÓI ĐẦU
+# Thời đại hoàng kim trên biển của Trung Hoa
+
 Cách Bắc Kinh 50 cây số về phía bắc, tại Cư Dung Quan, một cửa ải nằm trên Vạn Lý Trường Thành, đánh dấu biên giới giữa Trung Hoa và thảo nguyên Mông Cổ, có đặt một tấm bia đá được khắc vào năm 1342. Trong một văn tự được làm theo lệnh của Hốt Tất Liệt, có đề cập đến vị vua Mông Cổ này với tước hiệu “Hoàng đế của biển cả và Đại Hãn của Đế quốc.”[1]
 
 *Hoàng đế của biển cả* là nhan đề của cuốn sách này, nhưng cũng là tước hiệu mà người Mông Cổ trao cho người lãnh đạo tối cao, tuy họ là một dân tộc sống trong nội lục. Bởi với họ, đại dương cũng đại diện cho toàn bộ vũ trụ. Theo tôi biết, họ là nền văn minh duy nhất gọi người lãnh đạo cao nhất là Hoàng đế của biển cả, hoặc Đạt Lai Hãn (*Dalai Khan*) trong tiếng Mông Cổ. Họ sử dụng tước hiệu này trên những đồng xu, trong những con dấu và văn bản chính thức, bao gồm những bức thư gửi cho các bậc vua chúa châu Âu và cho Giáo hoàng. Các thư tịch Trung Hoa nhiều lần khẳng định rằng người Mông Cổ mong muốn “sở hữu vạn vật trong Tứ Hải.” Còn nhà chép sử Ba Tư tên là Rashid al-Din, một trí thức Do Thái đã cải đạo sang Hồi giáo và vươn lên nắm quyền lực ở các vùng lãnh thổ Trung Đông của Đế quốc Mông Cổ, đã mô tả việc sử dụng tước hiệu này bằng cách giải thích rằng Đại Hãn là “một hoàng đế vĩ đại như đại dương.”[2] Hốt Tất Liệt cũng nói đến việc thời kỳ cai trị của ông sẽ kéo dài mãi mãi, với ý nghĩa vương quốc sẽ bao trùm cả thế giới và tồn tại đến muôn đời.
