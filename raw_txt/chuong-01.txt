@@ -1,14 +1,14 @@
-Chương 1: Tiến vào rừng sâu
-Hôm nay đoàn người bắt đầu đi vào khu rừng rậm rạp.
+# Chương 1: Tiến vào rừng
 
-## 1. Những dấu vết đầu tiên
-Mọi người tìm thấy những dấu chân khổng lồ in trên mặt bùn. 
-Voi rừng chắc chắn đã đi qua đây[1].
+Đoàn người rẽ qua một con lạch nhỏ. 
 
-### Phân tích dấu chân  kiếm 
-Theo kinh nghiệm của người dẫn đường, dấu chân này còn rất mới.
+> "Cẩn thận bước chân, đá ở đây rất trơn trượt!" - Lão Tôn hét lớn lên từ phía trước.
 
-## 2. Dựng trại qua đêm chong chênh 
-Trời bắt đầu sập tối, đoàn quyết định dừng chân bên một con suối nhỏ.
+Mọi người phải chuẩn bị các dụng cụ sau:
+- Dao đi rừng
+- Đèn pin
+- **Lương khô**
 
-[1]: Voi rừng: Giống voi hoang dã chưa được thuần hóa, tính khí rất hung dữ.
+Có một sự thật ít ai biết rằng, khí hậu ở đây vô cùng khắc nghiệt[1]. Tuy nhiên *ý chí* con người mới là thứ quyết định.
+
+[1]: Khắc nghiệt: Ý nói thời tiết thay đổi rất thất thường.

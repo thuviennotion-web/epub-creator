@@ -1,24 +1,24 @@
 const fs = require('fs');
 const path = require('path');
+const { marked } = require('marked'); // Import thư viện Markdown
 
 // ==========================================
 // CẤU HÌNH THÔNG TIN SÁCH
 // ==========================================
 const bookConfig = {
-    title: "Dẫn Voi Mai Kia",
-    author: "Tên Tác Giả",
+    title: "Hoàng Đế của Biển Cả",
+    author: "Jack Weatherford",
     language: "vi",
     identifier: "urn:uuid:12345678-1234-5678-1234-567812345678"
 };
 
-const inputDir = './raw_txt'; 
+const inputDir = './raw_md';  // Đã đổi sang thư mục chứa file .md
 const outputDir = './src/OEBPS/Text'; 
 const oebpsDir = './src/OEBPS';
 
 if (!fs.existsSync(inputDir)) fs.mkdirSync(inputDir, { recursive: true });
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-// Xóa file xhtml cũ trước khi build lại
 const oldFiles = fs.readdirSync(outputDir).filter(file => file.endsWith('.xhtml'));
 oldFiles.forEach(file => fs.unlinkSync(path.join(outputDir, file)));
 
@@ -33,17 +33,16 @@ ${bodyContent}
 </body>
 </html>`;
 
-const files = fs.readdirSync(inputDir).filter(file => file.endsWith('.txt')).sort();
+const files = fs.readdirSync(inputDir).filter(file => file.endsWith('.md')).sort();
 
 if (files.length === 0) {
-    console.log('⚠️ Không tìm thấy file .txt nào.');
+    console.log('⚠️ Không tìm thấy file .md nào trong thư mục raw_md.');
     process.exit(1);
 }
 
 let manifestItems = `    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n`;
 manifestItems += `    <item id="css" href="Styles/style.css" media-type="text/css"/>\n`;
 
-// Tự động nhúng toàn bộ Font (Gồm cả Averta, Crimson, Argentum Novus)
 const fontsDir = './src/OEBPS/Fonts';
 if (fs.existsSync(fontsDir)) {
     const fontFiles = fs.readdirSync(fontsDir).filter(file => file.match(/\.(ttf|otf|woff|woff2)$/i));
@@ -57,66 +56,92 @@ if (fs.existsSync(fontsDir)) {
 let spineItems = ``;
 let navListItems = ``;
 let globalNotesHtml = '';
+let insidePart = false;
 
-console.log(`🔄 Đang build ${files.length} file...`);
+console.log(`🔄 Đang biên dịch ${files.length} file Markdown sang EPUB...`);
 
 files.forEach(file => {
     const filePath = path.join(inputDir, file);
     const content = fs.readFileSync(filePath, 'utf-8');
     const lines = content.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
     
-    // Yêu cầu file txt có tối thiểu 2 dòng (Nhãn và Tên)
-    if (lines.length < 2) return;
+    if (lines.length === 0) return;
 
-    const outputFileName = file.replace('.txt', '.xhtml');
-    const fileId = file.replace('.txt', ''); 
+    const outputFileName = file.replace('.md', '.xhtml');
+    const fileId = file.replace('.md', ''); 
 
-    // Dòng 1 là Label (CHƯƠNG 1), Dòng 2 là Title (Tên chương)
-    const chapterLabel = lines[0];
-    const chapterTitle = lines[1];
-    const displayTitle = `${chapterLabel}: ${chapterTitle}`; // Tên dùng trên thanh tiêu đề ứng dụng
+    // Lấy dòng đầu tiên làm tiêu đề, tự động gọt bỏ dấu '#' nếu có
+    const titleLine = lines[0];
+    const cleanTitle = titleLine.replace(/^#+\s*/, ''); 
     
-    // Gán class để CSS nhận diện và áp dụng Drop Cap cho thẻ <p> ngay sau nó
-    let bodyHtml = `    <h2 class="chapter-label">${chapterLabel}</h2>\n    <h1 class="chapter-title">${chapterTitle}</h1>\n`;
+    const titleLower = cleanTitle.toLowerCase();
+    const isPart = titleLower.startsWith('phần') || titleLower.startsWith('quyển') || titleLower.startsWith('tập');
+    
+    let bodyHtml = '';
+    if (isPart) {
+        bodyHtml += `    <h1 class="part-title">${cleanTitle}</h1>\n`;
+    } else {
+        bodyHtml += `    <h1>${cleanTitle}</h1>\n`;
+    }
+    
     let chapterNotesHtml = '';
+    let markdownBodyLines = [];
     
-    // Chạy vòng lặp từ dòng thứ 3 (index 2) để lấy nội dung văn bản
-    for (let i = 2; i < lines.length; i++) {
+    // Tách riêng phần thân (body) và phần chú thích (footnotes)
+    for (let i = 1; i < lines.length; i++) {
         let line = lines[i];
         const noteMatch = line.match(/^\[(\d+)\]:\s*(.+)$/);
         
         if (noteMatch) {
             const noteId = noteMatch[1];
-            const noteText = noteMatch[2];
+            // Render nội dung chú thích bằng marked (hỗ trợ in đậm/nghiêng trong chú thích)
+            const noteText = marked.parseInline(noteMatch[2]);
+            
             chapterNotesHtml += `        <aside epub:type="footnote" id="fn_${fileId}_${noteId}">\n            <p><a href="${outputFileName}#ref${noteId}" class="footnote-return" title="Quay lại vị trí đọc"><strong>${noteId}.</strong></a> ${noteText}</p>\n        </aside>\n`;
-        } else if (line.startsWith('### ')) {
-            bodyHtml += `    <h3>${line.substring(4).trim()}</h3>\n`;
-        } else if (line.startsWith('## ')) {
-            bodyHtml += `    <h2>${line.substring(3).trim()}</h2>\n`;
         } else {
+            // Thay thế liên kết [1] thành thẻ HTML, giữ nguyên các cú pháp Markdown khác
             let processedLine = line.replace(/\[(\d+)\]/g, (match, p1) => {
                 return `<a epub:type="noteref" href="notes.xhtml#fn_${fileId}_${p1}" id="ref${p1}" class="noteref">${p1}</a>`;
             });
-            bodyHtml += `    <p>${processedLine}</p>\n`;
+            markdownBodyLines.push(processedLine);
         }
     }
 
+    // BIÊN DỊCH TOÀN BỘ PHẦN THÂN TỪ MARKDOWN SANG HTML
+    const rawMarkdown = markdownBodyLines.join('\n\n'); // Thêm dòng trống để marked hiểu là các đoạn <p>
+    const compiledHtml = marked.parse(rawMarkdown);
+    bodyHtml += compiledHtml;
+
     if (chapterNotesHtml !== '') {
-        globalNotesHtml += `\n    <div class="chapter-notes-group">\n        <h3>${chapterLabel} - ${chapterTitle}</h3>\n${chapterNotesHtml}    </div>\n`;
+        globalNotesHtml += `\n    <div class="chapter-notes-group">\n        <h3>${cleanTitle}</h3>\n${chapterNotesHtml}    </div>\n`;
     }
 
-    const finalXhtml = xhtmlTemplate(displayTitle, bodyHtml);
+    const finalXhtml = xhtmlTemplate(cleanTitle, bodyHtml);
     fs.writeFileSync(path.join(outputDir, outputFileName), finalXhtml, 'utf-8');
-    console.log(`   ✅ Đã tạo: ${outputFileName}`);
+    console.log(`   ✅ Đã dịch: ${outputFileName} ${isPart ? '(Bìa Phần)' : ''}`);
 
     manifestItems += `    <item id="${fileId}" href="Text/${outputFileName}" media-type="application/xhtml+xml"/>\n`;
     spineItems += `    <itemref idref="${fileId}"/>\n`;
-    
-    // Mục lục phẳng chuẩn mực cho Calibre (Ghi gộp Nhãn và Tên)
-    navListItems += `            <li><a href="Text/${outputFileName}">${chapterLabel} - ${chapterTitle}</a></li>\n`;
+
+    if (isPart) {
+        if (insidePart) {
+            navListItems += `                </ol>\n            </li>\n`; 
+        }
+        navListItems += `            <li>\n                <a href="Text/${outputFileName}">${cleanTitle}</a>\n                <ol>\n`; 
+        insidePart = true;
+    } else {
+        if (insidePart) {
+            navListItems += `                    <li><a href="Text/${outputFileName}">${cleanTitle}</a></li>\n`; 
+        } else {
+            navListItems += `            <li><a href="Text/${outputFileName}">${cleanTitle}</a></li>\n`; 
+        }
+    }
 });
 
-// TẠO FILE TỔNG HỢP: notes.xhtml
+if (insidePart) {
+    navListItems += `                </ol>\n            </li>\n`;
+}
+
 if (globalNotesHtml !== '') {
     const notesTitle = "Toàn bộ chú thích";
     const notesBody = `    <h1>${notesTitle}</h1>\n    <section epub:type="footnotes" class="footnotes-section">\n${globalNotesHtml}    </section>\n`;
@@ -126,7 +151,6 @@ if (globalNotesHtml !== '') {
     spineItems += `    <itemref idref="notes" linear="no"/>\n`;
 }
 
-// CẬP NHẬT CONTENT.OPF
 const modifiedDate = new Date().toISOString().split('.')[0] + 'Z'; 
 const opfContent = `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="3.0">
@@ -142,7 +166,6 @@ const opfContent = `<?xml version="1.0" encoding="utf-8"?>
 </package>`;
 fs.writeFileSync(path.join(oebpsDir, 'content.opf'), opfContent, 'utf-8');
 
-// CẬP NHẬT NAV.XHTML
 const navContent = `<?xml version="1.0" encoding="utf-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="${bookConfig.language}" lang="${bookConfig.language}">
 <head><title>Mục lục</title></head>
@@ -155,4 +178,4 @@ const navContent = `<?xml version="1.0" encoding="utf-8"?>
 </html>`;
 fs.writeFileSync(path.join(oebpsDir, 'nav.xhtml'), navContent, 'utf-8');
 
-console.log('🎉 Xong! Toàn bộ Epub đã được Build với đầy đủ Font và cấu trúc xịn xò!');
+console.log('🎉 Xong! Hệ thống đã nâng cấp thành công lên Markdown!');
