@@ -53,6 +53,22 @@ if (fs.existsSync(fontsDir)) {
     });
 }
 
+const imagesDir = './src/OEBPS/Images';
+if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
+
+if (fs.existsSync(imagesDir)) {
+    const imageFiles = fs.readdirSync(imagesDir).filter(file => file.match(/\.(jpg|jpeg|png|gif|svg)$/i));
+    imageFiles.forEach((file, index) => {
+        let mediaType = 'image/jpeg';
+        if (file.toLowerCase().endsWith('.png')) mediaType = 'image/png';
+        else if (file.toLowerCase().endsWith('.gif')) mediaType = 'image/gif';
+        else if (file.toLowerCase().endsWith('.svg')) mediaType = 'image/svg+xml';
+        
+        manifestItems += `    <item id="img_${index}" href="Images/${file}" media-type="${mediaType}"/>\n`;
+    });
+    console.log(`🖼️  Đã nhúng tự động ${imageFiles.length} file hình ảnh.`);
+}
+
 let spineItems = ``;
 let navListItems = ``;
 let globalNotesHtml = '';
