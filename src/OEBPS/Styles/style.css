@@ -182,3 +182,46 @@ img {
     margin: 1em auto;      /* Tự động căn giữa ảnh và cách đều trên/dưới */
     border-radius: 4px;    /* Bo tròn nhẹ 4 góc ảnh cho hiện đại (tùy chọn) */
 }
+
+/* ========================================== */
+/* 8. ĐỊNH DẠNG TRÍCH DẪN ĐẦU CHƯƠNG          */
+/* ========================================== */
+div.epigraph {
+    text-align: right;
+    margin-top: 3em;     
+    margin-bottom: 4em;  
+    margin-left: 20%;    
+    padding-right: 1em;
+}
+
+div.epigraph p {
+    text-indent: 0;      
+    margin-bottom: 0.5em;
+    font-size: 1.1em;
+}
+
+div.epigraph p.author {
+    font-size: 1em;
+    font-style: normal;
+}
+
+/* ========================================== */
+/* CẬP NHẬT LẠI DROP CAP                      */
+/* Bắt buộc phải có để chữ "S" phình to       */
+/* ========================================== */
+h1.chapter-title + p,
+div.epigraph + p {
+    text-indent: 0; 
+}
+
+h1.chapter-title + p::first-letter,
+div.epigraph + p::first-letter {
+    font-family: "Argentum Novus Light", serif; 
+    font-size: 3.5em; 
+    font-weight: normal;
+    float: left; 
+    line-height: 0.7; /* Đã đồng bộ với chỉ số line-height hiện tại của bạn */
+    padding-right: 0.00em; 
+    margin-top: 0.05em; 
+    color: #111;
+}

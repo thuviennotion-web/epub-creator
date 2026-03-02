@@ -5,7 +5,7 @@
     <dc:creator>Tên Tác Giả</dc:creator>
     <dc:language>vi</dc:language>
     <dc:identifier id="bookid">urn:uuid:12345678-1234-5678-1234-567812345678</dc:identifier>
-    <meta property="dcterms:modified">2026-03-02T05:51:14Z</meta>
+    <meta property="dcterms:modified">2026-03-02T13:46:42Z</meta>
   </metadata>
   <manifest>
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
@@ -23,12 +23,14 @@
     <item id="01-loi-noi-dau" href="Text/01-loi-noi-dau.xhtml" media-type="application/xhtml+xml"/>
     <item id="02-mo-dau" href="Text/02-mo-dau.xhtml" media-type="application/xhtml+xml"/>
     <item id="03-chuong-01" href="Text/03-chuong-01.xhtml" media-type="application/xhtml+xml"/>
+    <item id="04-chuong-02" href="Text/04-chuong-02.xhtml" media-type="application/xhtml+xml"/>
     <item id="notes" href="Text/notes.xhtml" media-type="application/xhtml+xml"/>
   </manifest>
   <spine>
     <itemref idref="01-loi-noi-dau"/>
     <itemref idref="02-mo-dau"/>
     <itemref idref="03-chuong-01"/>
+    <itemref idref="04-chuong-02"/>
     <itemref idref="notes" linear="no"/>
   </spine>
 </package>
