@@ -179,6 +179,6 @@ img {
     max-width: 100%;       /* Đảm bảo ảnh không bao giờ to hơn chiều ngang màn hình */
     height: auto;          /* Giữ nguyên tỷ lệ khung hình */
     display: block;        /* Ép ảnh đứng riêng một dòng */
-    margin: 2em auto;      /* Tự động căn giữa ảnh và cách đều trên/dưới */
+    margin: 1em auto;      /* Tự động căn giữa ảnh và cách đều trên/dưới */
     border-radius: 4px;    /* Bo tròn nhẹ 4 góc ảnh cho hiện đại (tùy chọn) */
 }
